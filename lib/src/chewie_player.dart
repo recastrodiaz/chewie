@@ -8,8 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:screen/screen.dart';
 import 'package:video_player/video_player.dart';
 
-typedef Widget ChewieRoutePageBuilder(
-    BuildContext context,
+typedef Widget ChewieRoutePageBuilder(BuildContext context,
     Animation<double> animation,
     Animation<double> secondaryAnimation,
     _ChewieControllerProvider controllerProvider);
@@ -22,7 +21,8 @@ class Chewie extends StatefulWidget {
   Chewie({
     Key key,
     this.controller,
-  })  : assert(controller != null, 'You must provide a chewie controller'),
+  })
+      : assert(controller != null, 'You must provide a chewie controller'),
         super(key: key);
 
   /// The [ChewieController]
@@ -75,8 +75,7 @@ class ChewieState extends State<Chewie> {
     );
   }
 
-  Widget _buildFullScreenVideo(
-      BuildContext context,
+  Widget _buildFullScreenVideo(BuildContext context,
       Animation<double> animation,
       _ChewieControllerProvider controllerProvider) {
     return Scaffold(
@@ -89,8 +88,7 @@ class ChewieState extends State<Chewie> {
     );
   }
 
-  AnimatedWidget _defaultRoutePageBuilder(
-      BuildContext context,
+  AnimatedWidget _defaultRoutePageBuilder(BuildContext context,
       Animation<double> animation,
       Animation<double> secondaryAnimation,
       _ChewieControllerProvider controllerProvider) {
@@ -102,11 +100,9 @@ class ChewieState extends State<Chewie> {
     );
   }
 
-  Widget _fullScreenRoutePageBuilder(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-  ) {
+  Widget _fullScreenRoutePageBuilder(BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,) {
     var controllerProvider = _ChewieControllerProvider(
       controller: widget.controller,
       child: PlayerWithControls(),
@@ -121,7 +117,9 @@ class ChewieState extends State<Chewie> {
   }
 
   Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
-    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final isAndroid = Theme
+        .of(context)
+        .platform == TargetPlatform.android;
     final TransitionRoute<Null> route = PageRouteBuilder<Null>(
       settings: RouteSettings(isInitialRoute: false),
       pageBuilder: _fullScreenRoutePageBuilder,
@@ -129,10 +127,17 @@ class ChewieState extends State<Chewie> {
 
     SystemChrome.setEnabledSystemUIOverlays([]);
     if (isAndroid) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
+      if (widget.controller.videoPlayerController.value.aspectRatio > 1.0) {
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
+      } else {
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+      }
     }
 
     if (!widget.controller.allowedScreenSleep) {
@@ -194,7 +199,7 @@ class ChewieController extends ChangeNotifier {
     ],
     this.routePageBuilder = null,
   }) : assert(videoPlayerController != null,
-            'You must provide a controller to play a video') {
+  'You must provide a controller to play a video') {
     _initialize();
   }
 
@@ -271,8 +276,8 @@ class ChewieController extends ChangeNotifier {
 
   static ChewieController of(BuildContext context) {
     final chewieControllerProvider =
-        context.inheritFromWidgetOfExactType(_ChewieControllerProvider)
-            as _ChewieControllerProvider;
+    context.inheritFromWidgetOfExactType(_ChewieControllerProvider)
+    as _ChewieControllerProvider;
 
     return chewieControllerProvider.controller;
   }
@@ -354,7 +359,8 @@ class _ChewieControllerProvider extends InheritedWidget {
     Key key,
     @required this.controller,
     @required Widget child,
-  })  : assert(controller != null),
+  })
+      : assert(controller != null),
         assert(child != null),
         super(key: key, child: child);
 
