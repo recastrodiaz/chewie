@@ -4,8 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 
 class CupertinoVideoProgressBar extends StatefulWidget {
-  CupertinoVideoProgressBar(
-    this.controller, {
+  CupertinoVideoProgressBar(this.controller, {
     ChewieProgressColors colors,
     this.onDragEnd,
     this.onDragStart,
@@ -27,7 +26,9 @@ class CupertinoVideoProgressBar extends StatefulWidget {
 class _VideoProgressBarState extends State<CupertinoVideoProgressBar> {
   _VideoProgressBarState() {
     listener = () {
-      setState(() {});
+      if(mounted) {
+        setState(() {});
+      }
     };
   }
 
@@ -44,7 +45,9 @@ class _VideoProgressBarState extends State<CupertinoVideoProgressBar> {
 
   @override
   void deactivate() {
-    controller.removeListener(listener);
+    // TODO @recastrodiaz having this line causes the app to crash when a video player controller is diposed and a new
+    // instance is created at the same place in the tree
+    // controller.removeListener(listener);
     super.deactivate();
   }
 
@@ -61,8 +64,14 @@ class _VideoProgressBarState extends State<CupertinoVideoProgressBar> {
     return GestureDetector(
       child: Center(
         child: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery
+              .of(context)
+              .size
+              .height,
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
           color: Colors.transparent,
           child: CustomPaint(
             painter: _ProgressBarPainter(
@@ -147,7 +156,7 @@ class _ProgressBarPainter extends CustomPainter {
     final double playedPartPercent =
         value.position.inMilliseconds / value.duration.inMilliseconds;
     final double playedPart =
-        playedPartPercent > 1 ? size.width : playedPartPercent * size.width;
+    playedPartPercent > 1 ? size.width : playedPartPercent * size.width;
     for (DurationRange range in value.buffered) {
       final double start = range.startFraction(value.duration) * size.width;
       final double end = range.endFraction(value.duration) * size.width;
@@ -162,6 +171,17 @@ class _ProgressBarPainter extends CustomPainter {
         colors.bufferedPaint,
       );
     }
+
+    final double clippedStartPercent =
+        value.startPosition.inMilliseconds / value.duration.inMilliseconds;
+    final double clippedStart =
+    clippedStartPercent > 1 ? size.width : clippedStartPercent * size.width;
+
+    final double clippedEndPercent =
+        value.endPosition.inMilliseconds / value.duration.inMilliseconds;
+    final double clippedEnd =
+    clippedEndPercent > 1 ? size.width : clippedEndPercent * size.width;
+
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromPoints(
@@ -171,6 +191,30 @@ class _ProgressBarPainter extends CustomPainter {
         Radius.circular(4.0),
       ),
       colors.playedPaint,
+    );
+
+    // Render clipping
+    // Left
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromPoints(
+          Offset(0.0, baseOffset),
+          Offset(clippedStart, baseOffset + barHeight),
+        ),
+        Radius.circular(4.0),
+      ),
+      colors.clippedPaint,
+    );
+    // Right
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromPoints(
+          Offset(clippedEnd, baseOffset),
+          Offset(size.width, baseOffset + barHeight),
+        ),
+        Radius.circular(4.0),
+      ),
+      colors.clippedPaint,
     );
 
     final shadowPath = Path()
