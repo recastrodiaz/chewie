@@ -21,7 +21,7 @@ class _MaterialControlsState extends State<MaterialControls> {
   double _latestVolume;
   bool _hideStuff = true;
   Timer _hideTimer;
-  Timer _showTimer;
+  Timer _initTimer;
   Timer _showAfterExpandCollapseTimer;
   bool _dragging = false;
 
@@ -48,24 +48,29 @@ class _MaterialControlsState extends State<MaterialControls> {
             );
     }
 
-    return GestureDetector(
-      onTap: () => _cancelAndRestartTimer(),
-      child: AbsorbPointer(
-        absorbing: _hideStuff,
-        child: Column(
-          children: <Widget>[
-            _latestValue != null &&
-                        !_latestValue.isPlaying &&
-                        _latestValue.duration == null ||
-                    _latestValue.isBuffering
-                ? const Expanded(
-                    child: const Center(
-                      child: const CircularProgressIndicator(),
-                    ),
-                  )
-                : _buildHitArea(),
-            _buildBottomBar(context),
-          ],
+    return MouseRegion(
+      onHover: (_) {
+        _cancelAndRestartTimer();
+      },
+      child: GestureDetector(
+        onTap: () => _cancelAndRestartTimer(),
+        child: AbsorbPointer(
+          absorbing: _hideStuff,
+          child: Column(
+            children: <Widget>[
+              _latestValue != null &&
+                          !_latestValue.isPlaying &&
+                          _latestValue.duration == null ||
+                      _latestValue.isBuffering
+                  ? const Expanded(
+                      child: const Center(
+                        child: const CircularProgressIndicator(),
+                      ),
+                    )
+                  : _buildHitArea(),
+              _buildBottomBar(context),
+            ],
+          ),
         ),
       ),
     );
@@ -80,7 +85,7 @@ class _MaterialControlsState extends State<MaterialControls> {
   void _dispose() {
     controller.removeListener(_updateState);
     _hideTimer?.cancel();
-    _showTimer?.cancel();
+    _initTimer?.cancel();
     _showAfterExpandCollapseTimer?.cancel();
   }
 
@@ -286,11 +291,13 @@ class _MaterialControlsState extends State<MaterialControls> {
       _startHideTimer();
     }
 
-    _showTimer = Timer(Duration(milliseconds: 200), () {
-      setState(() {
-        _hideStuff = false;
+    if (chewieController.showControlsOnInitialize) {
+      _initTimer = Timer(Duration(milliseconds: 200), () {
+        setState(() {
+          _hideStuff = false;
+        });
       });
-    });
+    }
   }
 
   void _onExpandCollapse() {
